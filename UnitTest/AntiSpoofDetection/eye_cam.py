@@ -15,16 +15,26 @@ import threading
 
 RESET_TIMER = 15
 
+TOTAL = 0
+TOTAL_LOCK = threading.Lock()
+alert_sent = False  # Flag to track if alert was sent
+
 def alert():
-    print("No liveliness detected")
+    print("Alert")
+    global alert_sent
+    alert_sent = True  # Set flag after sending the alert
 
 def reset_counter():
-    global COUNTER
-    threading.Timer(RESET_TIMER, reset_counter).start()
-    if COUNTER < 2:
-        alert()
-    COUNTER = 0
+    global TOTAL, alert_sent
+    with TOTAL_LOCK:
+        TOTAL = 0
+        if alert_sent:
+            # Reset the alert flag after the timer interval
+            alert_sent = False
+            threading.Timer(RESET_TIMER, reset_counter).start()
 
+# Start the initial timer
+reset_counter()
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -132,14 +142,14 @@ while True:
         else:
             # if the eyes were closed for a sufficient number of
             # then increment the total number of blinks
-            if COUNTER >= 3:
-                TOTAL += 1
+            if COUNTER >= EYE_AR_CONSEC_FRAMES:
+                COUNTER += 1
             # reset the eye frame counter
             COUNTER = 0
 
             # draw the total number of blinks on the frame along with
             # the computed eye aspect ratio for the frame
-        cv2.putText(frame, "Blinks: {}".format(COUNTER), (10, 30),
+        cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
@@ -149,7 +159,7 @@ while True:
     key = cv2.waitKey(1) & 0xFF
 
     # if the `q` key was pressed, break from the loop
-    if key == ord("q"):
+    if key == ord("q"):        
         break
 
 # do a bit of cleanup

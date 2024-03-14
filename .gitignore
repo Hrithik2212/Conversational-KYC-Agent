@@ -10,6 +10,7 @@ __pycache__/
 *.jpg
 *.jpeg
 *.png
+*.pdf 
 
 # model files 
 *.dat

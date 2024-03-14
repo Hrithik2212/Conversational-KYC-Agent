@@ -11,7 +11,6 @@ import cv2
 import base64 
 from PIL import Image
 import io 
-import threading
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("models/shape_predictor_68_face_landmarks.dat")  #changed by me
@@ -37,9 +36,10 @@ EYE_AR_CONSEC_FRAMES = 3
 COUNTER = 0
 TOTAL = 0
 
+
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  #changed by me
 
-def detect_blinks(base64_img : str ,):
+def detect_blinks(base64_img : str):
     global COUNTER
     image_data = base64.b64decode(base64_img)
     # Convert bytes to an image
@@ -85,13 +85,3 @@ def detect_blinks(base64_img : str ,):
                 TOTAL += 1
             # reset the eye frame counter
             COUNTER = 0
-
-def alert():
-    print("ALERT: Counter less than 5")
-
-def reset_counter():
-    global COUNTER
-    threading.Timer(RESET_TIMER, reset_counter).start()
-    if COUNTER < 5:
-        alert()
-    COUNTER = 0
