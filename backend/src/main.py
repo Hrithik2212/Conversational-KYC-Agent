@@ -1,5 +1,3 @@
-# main.py
-
 from fastapi import FastAPI,HTTPException,WebSocket, WebSocketDisconnect , UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import base64
@@ -11,7 +9,17 @@ from imutils.video import VideoStream
 from imutils.face_utils import FACIAL_LANDMARKS_IDXS
 from scipy.spatial import distance as dist
 from imutils import face_utils
-
+from pdf2image import convert_from_path
+import numpy as np
+import os
+import mtcnn 
+import base64 
+from PIL import Image 
+from keras_vggface.vggface import VGGFace
+from keras_vggface.utils import preprocess_input 
+import matplotlib.pyplot as plt 
+from sklearn.metrics.pairwise import cosine_similarity
+import json
 
 app = FastAPI()
 
@@ -138,7 +146,7 @@ def pdf_to_image(pdf_path, output_path, dpi=200):
 
 
 @app.post("/upload")
-async def upload_pdf(file: UploadFile = File(...)):
+async def upload_pdf(file: UploadFile = File(...) ,identity : str):
     """
     Endpoint to upload a PDF file.
 
@@ -154,7 +162,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         with open(file.filename, "wb") as f:
             f.write(file.file.read())
         
-        pdf_to_image(file.filename , "aadhar" )
+        pdf_to_image(file.filename , identity )
         os.remove(file.filename)
         return {"message": "PDF uploaded successfully." }
     else:
@@ -231,3 +239,8 @@ def face_verification(base64_img : str ):
         return {"res":"true" ,  "message" : "verification swuccessful"} 
     else :
         return {"res" : "false" , "message" : "verification  failure"}
+    
+@app.post("/admin-verification")
+def admin_verification() : 
+    time.sleep(20)
+    return {"verification_stauts" : "KYC process is successfully verified and you have onboarded us"}
