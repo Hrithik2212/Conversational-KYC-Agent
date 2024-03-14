@@ -25,7 +25,7 @@ Install project with npm
 
 ## Screenshots
 
-![App Screenshot](https://drive.google.com/file/d/12LAzryFqP665eSUkK9UlgHGl6nE2h7kk/view?usp=share_link)
+![App Screenshot](https://www.tumblr.com/situya/744928588587991040/github?source=share)
 
 
 
