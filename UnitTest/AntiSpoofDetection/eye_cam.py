@@ -9,6 +9,22 @@ import imutils
 import time
 import dlib
 import cv2
+import threading
+
+
+
+RESET_TIMER = 15
+
+def alert():
+    print("No liveliness detected")
+
+def reset_counter():
+    global COUNTER
+    threading.Timer(RESET_TIMER, reset_counter).start()
+    if COUNTER < 2:
+        alert()
+    COUNTER = 0
+
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -24,12 +40,12 @@ def eye_aspect_ratio(eye):
         return ear
 
 # construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--shape-predictor", required=True,
-    help="path to facial landmark predictor")
-#ap.add_argument("-v", "--video", type=str, default="",   #OMIT THIS WHEN LIVE STREAMING
-    #help="path to input video file")                     #omit this also when live streaming
-args = vars(ap.parse_args())
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-p", "--shape-predictor", required=True,
+#     help="path to facial landmark predictor")
+# #ap.add_argument("-v", "--video", type=str, default="",   #OMIT THIS WHEN LIVE STREAMING
+#     #help="path to input video file")                     #omit this also when live streaming
+# args = vars(ap.parse_args())
 
 # define two constants, one for the eye aspect ratio to indicate
 # blink and then a second constant for the number of consecutive
@@ -40,6 +56,7 @@ EYE_AR_CONSEC_FRAMES = 3
 COUNTER = 0
 TOTAL = 0
 
+reset_counter()
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
 print("[INFO] loading facial landmark predictor...")
@@ -115,14 +132,14 @@ while True:
         else:
             # if the eyes were closed for a sufficient number of
             # then increment the total number of blinks
-            if COUNTER >= EYE_AR_CONSEC_FRAMES:
+            if COUNTER >= 3:
                 TOTAL += 1
             # reset the eye frame counter
             COUNTER = 0
 
             # draw the total number of blinks on the frame along with
             # the computed eye aspect ratio for the frame
-        cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30),
+        cv2.putText(frame, "Blinks: {}".format(COUNTER), (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
