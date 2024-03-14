@@ -1,6 +1,6 @@
 # main.py
 
-from fastapi import FastAPI,HTTPException,WebSocket, WebSocketDisconnect
+from fastapi import FastAPI,HTTPException,WebSocket, WebSocketDisconnect , UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import base64
 import io
@@ -11,6 +11,16 @@ from imutils.video import VideoStream
 from imutils.face_utils import FACIAL_LANDMARKS_IDXS
 from scipy.spatial import distance as dist
 from imutils import face_utils
+from pdf2image import convert_from_path
+import numpy as np
+import os
+import mtcnn 
+import base64 
+from PIL import Image 
+from keras_vggface.vggface import VGGFace
+from keras_vggface.utils import preprocess_input 
+import matplotlib.pyplot as plt 
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 app = FastAPI()
@@ -31,12 +41,15 @@ FONT_SCALE = 0.7
 FONT_THICKNESS = 2
 
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor("models/shape_predictor_68_face_landmarks.dat")
 (lStart, lEnd) = FACIAL_LANDMARKS_IDXS["left_eye"]
 (rStart, rEnd) = FACIAL_LANDMARKS_IDXS["right_eye"]
 
 last_blink_time = time.time()  # Track time of last detected blink
 TOTAL = 0  # Blink counter
+
+detector = mtcnn.MTCNN() 
+model = VGGFace(model='resnet50')
 
 @app.get("/getquestions")
 async def getQuestions():
@@ -106,3 +119,116 @@ async def blink_detection(websocket: WebSocket):
                         last_blink_time = time.time()
     except : 
         print("An error occured")
+
+
+def pdf_to_image(pdf_path, output_path, dpi=200):
+    """
+    Convert a PDF file to an image.
+
+    Args:
+        pdf_path (str): Path to the PDF file.
+        output_path (str): Path to save the output image.
+        dpi (int, optional): Resolution of the output image in dots per inch (DPI). Defaults to 200.
+    """
+    # Convert PDF to image
+    images = convert_from_path(pdf_path, dpi=dpi)
+
+    # Save images
+    for i, image in enumerate(images):
+        image.save(f"{output_path}_{i+1}.jpg", "JPEG")
+
+
+@app.post("/upload")
+async def upload_pdf(file: UploadFile = File(...)):
+    """
+    Endpoint to upload a PDF file.
+
+    Args:
+        file (UploadFile): Uploaded PDF file.
+
+    Returns:
+        dict: Response indicating successful upload.
+    """
+    # Check if the uploaded file is a PDF
+    if file.filename.endswith(".pdf"):
+        # Process the PDF file (e.g., save to disk, extract text, etc.)
+        with open(file.filename, "wb") as f:
+            f.write(file.file.read())
+        
+        pdf_to_image(file.filename , "aadhar" )
+        os.remove(file.filename)
+        return {"message": "PDF uploaded successfully." }
+    else:
+        return {"message": "Please upload a PDF file."}
+    
+
+
+def extract_face_from_base64(base64_string: str, required_size: tuple = (224, 224)):
+    # Decode the base64 string into bytes
+    image_data = base64.b64decode(base64_string)
+    # Convert bytes to an image
+    image = Image.open(io.BytesIO(image_data))
+    
+    # detect faces in the image
+    pixels = np.array(image)
+    results = detector.detect_faces(pixels)
+    # extract the bounding box from the first face
+    x1, y1, width, height = results[0]['box']
+    x2, y2 = x1 + width, y1 + height
+    # extract the face
+    face = pixels[y1:y2, x1:x2]
+    # resize pixels to the model size
+    image = Image.fromarray(face)
+    image = image.resize(required_size)
+    face_array = np.asarray(image)
+    return face_array
+
+def extract_face(file_name :str , required_size:tuple=(224, 224)):
+   
+    # detect faces in the image
+    pixels = plt.imread(file_name)
+    results = detector.detect_faces(pixels)
+    # extract the bounding box from the first face
+    x1, y1, width, height = results[0]['box']
+    x2, y2 = x1 + width, y1 + height
+    # extract the face
+    face = pixels[y1:y2, x1:x2]
+    # resize pixels to the model size
+    image = Image.fromarray(face)
+    image = image.resize(required_size)
+    face_array = np.asarray(image)
+    return face_array
+
+
+def get_embeddings(faces ):
+	# extract faces
+	# faces = [extract_face(f) for f in filenames]
+	# convert into an array of samples
+	samples = np.asarray(faces, 'float32')
+	# prepare the face for the model, e.g. center pixels
+	samples = preprocess_input(samples, version=2)
+	# create a vggface model
+	# perform prediction
+	yhat = model.predict(samples)
+	return yhat
+
+
+def is_match(known_embedding, candidate_embedding, thresh=0.3)->bool:
+        score = cosine_similarity(known_embedding.reshape(1,-1), candidate_embedding.reshape(1,-1))[0][0]
+        if score <= thresh:
+            print('>face is a Match (%.3f <= %.3f)' % (score, thresh))
+            return score , False  
+        else:
+            print('>face is NOT a Match (%.3f > %.3f)' % (score, thresh))
+            return score , True 
+
+@app.post("/verify-identity") 
+def face_verification(base64_img : str ):
+    face = extract_face("./full_face.jpg")# extract_face_from_base64(base64_img ) 
+    aadhar = extract_face("./aadhar_1.jpg")
+    yhat = get_embeddings(np.array([face , aadhar]))
+    score , res = is_match(yhat[0] , yhat[1])
+    if res : 
+        return {"res":"true" ,  "message" : "verification swuccessful"} 
+    else :
+        return {"res" : "false" , "message" : "verification  failure"}
