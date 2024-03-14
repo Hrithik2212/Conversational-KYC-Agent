@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Listen from '../listen/Listen';
-
+import TextToSpeech from '../textToSpeech/TextToSpeech';
 
 const Dictaphone = ({question,changeQuestion,setData}) => {
     const [isRecording, setIsRecording] = useState(false);
@@ -59,11 +59,13 @@ const Dictaphone = ({question,changeQuestion,setData}) => {
         microphone.stop();
       };
     }, [isRecording]);
+   
   
     return (
       <>
         {question.speak ? (
           <div>
+            
           <div className="noteContainer">
             {isRecording ? <Listen/> : note ?(
               <div>
@@ -75,6 +77,7 @@ const Dictaphone = ({question,changeQuestion,setData}) => {
               </div>
             ):(
               <div className=' h-[40px] mx-auto p-5 text-center'>
+                    <TextToSpeech text={question.speak} />
                     <button className='bg-blue-500 p-3 rounded-sm text-white' onClick={() => setIsRecording(true)}>Ready...</button>
               </div>
             )}

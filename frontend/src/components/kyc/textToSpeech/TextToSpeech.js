@@ -17,6 +17,7 @@ const TextToSpeech = ({text}) => {
     if (speechSynthesisSupported) {
       const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
+      utterance.rate = 0.7;
       utterance.voice = voices[25];
       window.speechSynthesis.speak(utterance);
     } else {

@@ -9,17 +9,7 @@ from imutils.video import VideoStream
 from imutils.face_utils import FACIAL_LANDMARKS_IDXS
 from scipy.spatial import distance as dist
 from imutils import face_utils
-from pdf2image import convert_from_path
-import numpy as np
-import os
-import mtcnn 
-import base64 
-from PIL import Image 
-from keras_vggface.vggface import VGGFace
-from keras_vggface.utils import preprocess_input 
-import matplotlib.pyplot as plt 
-from sklearn.metrics.pairwise import cosine_similarity
-import json
+
 
 app = FastAPI()
 
@@ -39,7 +29,7 @@ FONT_SCALE = 0.7
 FONT_THICKNESS = 2
 
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("models/shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 (lStart, lEnd) = FACIAL_LANDMARKS_IDXS["left_eye"]
 (rStart, rEnd) = FACIAL_LANDMARKS_IDXS["right_eye"]
 
@@ -145,17 +135,11 @@ def pdf_to_image(pdf_path, output_path, dpi=200):
         image.save(f"{output_path}_{i+1}.jpg", "JPEG")
 
 
+
+
+
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    """
-    Endpoint to upload a PDF file.
-
-    Args:
-        file (UploadFile): Uploaded PDF file.
-
-    Returns:
-        dict: Response indicating successful upload.
-    """
     # Check if the uploaded file is a PDF
     if file.filename.endswith(".pdf"):
         # Process the PDF file (e.g., save to disk, extract text, etc.)
@@ -166,7 +150,8 @@ async def upload_pdf(file: UploadFile = File(...)):
         os.remove(file.filename)
         return {"message": "PDF uploaded successfully." }
     else:
-        return {"message": "Please upload a PDF file."}
+        return JSONResponse(status_code=400, content={"message": "Please upload a PDF file."})
+
     
 
 
