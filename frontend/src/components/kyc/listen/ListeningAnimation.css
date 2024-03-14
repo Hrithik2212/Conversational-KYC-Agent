@@ -1,0 +1,14 @@
+.listening-animation {
+    animation: pulse 1.5s infinite alternate; 
+    rotate: 180deg;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.2);
+    }
+  }
+  

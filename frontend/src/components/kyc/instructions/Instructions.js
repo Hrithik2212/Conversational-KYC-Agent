@@ -5,7 +5,7 @@ const Instructions = () => {
     const [show,setShow]=useState(true)
   return (
     (show ? (
-        <div className='fixed top-[30%] left-[30%]'>
+        <div className='fixed top-[30%] left-[30%] z-[100]'>
           <div>
                 <div className="max-w-xl mx-auto p-6 bg-white rounded shadow-md">
                         <h1 className="text-2xl font-bold mb-4">Instructions</h1>

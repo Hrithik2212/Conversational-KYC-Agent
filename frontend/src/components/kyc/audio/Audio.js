@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import Listen from '../listen/Listen';
 
-// ... (your existing imports)
 
-const Dictaphone = () => {
+const Dictaphone = ({changeQuestion}) => {
     const [isRecording, setIsRecording] = useState(false);
-    const [note, setNote] = useState('');
+    const [note, setNote] = useState();
     const [notesStore, setNotesStore] = useState([]);
-  
+    const [timeoutId, setTimeoutId] = useState(null);
+    const [ready,setReady]=useState(false) 
     const storeNote = () => {
-      if (note.trim() !== '') {
+      if (note?.trim() !== '') {
         setNotesStore([...notesStore, note]);
-        setNote('');
+        changeQuestion()
+        setNote('')
       }
     };
+    
   
     useEffect(() => {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -20,55 +23,72 @@ const Dictaphone = () => {
       microphone.continuous = true;
       microphone.interimResults = true;
       microphone.lang = 'en-US';
+
   
       const startRecordController = () => {
         if (!isRecording) {
-          console.log("stopped");
+          
           microphone.stop();
         } else {
           microphone.start();
+          
+
         }
       };
   
       const handleSpeechRecognition = (event) => {
+        clearTimeout(timeoutId); 
         const recordingResult = Array.from(event.results)
           .map((result) => result[0])
           .map((result) => result.transcript)
           .join('');
   
         setNote(recordingResult);
+        setTimeoutId(setTimeout(() => {
+          setIsRecording(false); 
+        }, 5000));
       };
   
       startRecordController();
       microphone.onresult = handleSpeechRecognition;
   
       return () => {
-        // Cleanup: Stop the microphone when the component unmounts
+        clearTimeout(timeoutId); 
         microphone.stop();
       };
     }, [isRecording]);
   
     return (
       <>
-        <h1>Record Voice Notes</h1>
         <div>
           <div className="noteContainer">
-            <h2>Record Note Here</h2>
-            {isRecording ? <span>Recording... </span> : <span>Stopped </span>}
-            <button className="button" onClick={storeNote} disabled={!note}>
-              Save
-            </button>
-            <button onClick={() => setIsRecording((prev) => !prev)}>
-              {isRecording ? 'Stop' : 'Start'}
-            </button>
-            <p contentEditable={true}>{note}</p>
+            {isRecording ? <Listen/> : note ?(
+              <div>
+                <div>
+                    <p>{note}</p>
+                </div>
+                <button className='bg-blue-500 p-3 rounded-sm text-white' onClick={storeNote}>submit</button>
+              </div>
+            ):(
+              <div className=' h-[40px] mx-auto p-5 text-center'>
+                    <button className='bg-blue-500 p-3 rounded-sm text-white' onClick={() => setIsRecording(true)}>Ready...</button>
+              </div>
+            )}
+            
+            {isRecording &&
+              <div className="w-full ">
+                  <div >
+                    {note && <p>{note}</p>}
+                  </div>
+                  <div className=' h-[40px] mx-auto p-5 text-center'>
+                    <button className='bg-blue-500 p-3 rounded-sm text-white' onClick={() => setIsRecording(false)}>Stop</button>
+
+                  </div>
+              </div>
+            }
+            
           </div>
-          <div className="noteContainer">
-            <h2>Notes Store</h2>
-            {notesStore.map((storedNote, index) => (
-              <p key={index}>{storedNote}</p>
-            ))}
-          </div>
+          
         </div>
       </>
     );
