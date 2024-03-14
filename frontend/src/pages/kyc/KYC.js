@@ -33,7 +33,9 @@ const KYC = () => {
       if(index <=  questions.length - 1){
         setQuestion({
           "key": index,
-          "value": questions[index]?.question
+          "value": questions[index]?.question,
+          "label":questions[index]?.label,
+          "speak":questions[index]?.speak
         });
       }
       else{
@@ -46,14 +48,16 @@ const KYC = () => {
 
     }
     useEffect(()=>{
-      console.log(question)
-    },[question])
+      console.log(data)
+    },[data])
 
     useEffect(()=>{
-      console.log(questions)
+      
       setQuestion({
         "key": 0,
-        "value": questions[0]?.question
+        "value": questions[0]?.question,
+        "label":questions[0]?.label,
+        "speak":questions[0]?.speak
       });
       
 
@@ -77,7 +81,8 @@ const KYC = () => {
         <div className='flex  h-full mt-0 flex-1 w-full max-w-[1600px]  '>
             <div className='w-[70%] flex justify-center items-center'>
                 <div className='w-[30%]'>
-                    <Dictaphone question={question} changeQuestion={changeQuestion}/>
+                  {question?.value === "completed"}
+                    <Dictaphone question={question} changeQuestion={changeQuestion} setData={setData}/>
                 </div>
             </div>
 

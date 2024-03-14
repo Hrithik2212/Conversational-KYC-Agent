@@ -11,16 +11,6 @@ from imutils.video import VideoStream
 from imutils.face_utils import FACIAL_LANDMARKS_IDXS
 from scipy.spatial import distance as dist
 from imutils import face_utils
-from pdf2image import convert_from_path
-import numpy as np
-import os
-import mtcnn 
-import base64 
-from PIL import Image 
-from keras_vggface.vggface import VGGFace
-from keras_vggface.utils import preprocess_input 
-import matplotlib.pyplot as plt 
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 app = FastAPI()
@@ -36,7 +26,7 @@ app.add_middleware(
 
 EYE_AR_THRESH = 0.2  # Eye aspect ratio threshold
 EYE_AR_CONSEC_FRAMES = 3  # Minimum consecutive frames for blink detection
-NO_BLINK_ALERT_THRESHOLD = 10  # Seconds without blinking to trigger alert
+NO_BLINK_ALERT_THRESHOLD = 30  # Seconds without blinking to trigger alert
 FONT_SCALE = 0.7
 FONT_THICKNESS = 2
 
@@ -54,8 +44,12 @@ model = VGGFace(model='resnet50')
 @app.get("/getquestions")
 async def getQuestions():
     try:
-        questions=[{"label":"name","question":"What is your name?","speak":"Spell your name out if your name id raj spell it as R A J"},
-                    {"label":"email","question":"What is your email?","speak":"Spell your name out if your name id raj spell it as R A J"},
+        questions=[{"label":"name","question":"What is your name?","speak":"Spell your name out if your name is raj spell it as R A J"},
+                    {"label":"dob","question":"What is your date of birth?","speak":"Spell your date of birth if your date of birth  26-10-2000 spell 2 6 - 1 0 - 2 0 0 0"},
+                    {"label":"panid","question":"What is your pancard number?","speak":"Spell your number out if your number is 15000 spell it as 1 5 0 0"},
+                    {"label":"aadharid","question":"What is your aadhar number?","speak":"Spell your number out if your number is 15000 spell it as 1 5 0 0"},
+                    {"label":"income","question":"What is your income range?"},
+                    {"label":"address","question":"What is your state?"},
                    ]
         return {"questions": questions}
     except:
@@ -71,7 +65,9 @@ def eye_aspect_ratio(eye):
 
 @app.websocket("/blink-detection")
 async def blink_detection(websocket: WebSocket):
+    global TOTAL 
     await websocket.accept()
+    last_blink_time = time.time()
     try:
         while True:
             data = await websocket.receive_text()
@@ -92,6 +88,7 @@ async def blink_detection(websocket: WebSocket):
 
             # Detect faces
             rects = detector(gray, 0)
+            print(rects)
 
             # Process each detected face
             for rect in rects:
@@ -109,15 +106,17 @@ async def blink_detection(websocket: WebSocket):
                 if ear < EYE_AR_THRESH:
                     last_blink_time = time.time()
                     TOTAL += 1
+                    print(TOTAL)
                 else:
                     elapsed_time = time.time() - last_blink_time
                     if elapsed_time >= NO_BLINK_ALERT_THRESHOLD:
                         print("[ALERT] No blinking detected for", NO_BLINK_ALERT_THRESHOLD, "seconds!")
                         # Optionally send an alert message through the websocket (e.g., using JSON)
                         alert_message = {"type": "alert", "message": "No blinking detected for a prolonged period!"}
-                        await websocket.send_json(alert_message)
+                        await websocket.send_text(json.dumps(alert_message))
                         last_blink_time = time.time()
-    except : 
+    except Exception as E: 
+        print(E)
         print("An error occured")
 
 

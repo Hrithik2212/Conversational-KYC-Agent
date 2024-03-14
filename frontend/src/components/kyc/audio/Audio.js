@@ -2,19 +2,24 @@ import React, { useState, useEffect } from 'react';
 import Listen from '../listen/Listen';
 
 
-const Dictaphone = ({changeQuestion}) => {
+const Dictaphone = ({question,changeQuestion,setData}) => {
     const [isRecording, setIsRecording] = useState(false);
     const [note, setNote] = useState();
     const [notesStore, setNotesStore] = useState([]);
-    const [timeoutId, setTimeoutId] = useState(null);
-    const [ready,setReady]=useState(false) 
+  
+
     const storeNote = () => {
       if (note?.trim() !== '') {
         setNotesStore([...notesStore, note]);
-        changeQuestion()
         setNote('')
       }
     };
+
+    useEffect(()=>{
+      let label=question.label
+      setData(prev=>({...prev, [label]: notesStore[notesStore.length-1]}))
+      changeQuestion()
+    },[notesStore])
     
   
     useEffect(() => {
@@ -27,7 +32,6 @@ const Dictaphone = ({changeQuestion}) => {
   
       const startRecordController = () => {
         if (!isRecording) {
-          
           microphone.stop();
         } else {
           microphone.start();
@@ -37,35 +41,35 @@ const Dictaphone = ({changeQuestion}) => {
       };
   
       const handleSpeechRecognition = (event) => {
-        clearTimeout(timeoutId); 
+      
         const recordingResult = Array.from(event.results)
           .map((result) => result[0])
           .map((result) => result.transcript)
           .join('');
   
         setNote(recordingResult);
-        setTimeoutId(setTimeout(() => {
-          setIsRecording(false); 
-        }, 5000));
+        
       };
   
       startRecordController();
       microphone.onresult = handleSpeechRecognition;
   
       return () => {
-        clearTimeout(timeoutId); 
+        
         microphone.stop();
       };
     }, [isRecording]);
   
     return (
       <>
-        <div>
+        {question.speak ? (
+          <div>
           <div className="noteContainer">
             {isRecording ? <Listen/> : note ?(
               <div>
                 <div>
-                    <p>{note}</p>
+                  <label>{question.label}</label>
+                    <input value={note} onChange={(e)=>setNote(e.target.value)} required/>
                 </div>
                 <button className='bg-blue-500 p-3 rounded-sm text-white' onClick={storeNote}>submit</button>
               </div>
@@ -90,6 +94,14 @@ const Dictaphone = ({changeQuestion}) => {
           </div>
           
         </div>
+        ):(
+          <div>
+                <div>
+                    <input value={note} onChange={(e)=>setNote(e.target.value)} required/>
+                </div>
+                <button className='bg-blue-500 p-3 rounded-sm text-white' onClick={storeNote}>submit</button>
+          </div>
+        )}
       </>
     );
   };
