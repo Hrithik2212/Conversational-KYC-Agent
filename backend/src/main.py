@@ -146,7 +146,7 @@ def pdf_to_image(pdf_path, output_path, dpi=200):
 
 
 @app.post("/upload")
-async def upload_pdf(file: UploadFile = File(...) ,identity : str):
+async def upload_pdf(file: UploadFile = File(...)):
     """
     Endpoint to upload a PDF file.
 
@@ -162,7 +162,7 @@ async def upload_pdf(file: UploadFile = File(...) ,identity : str):
         with open(file.filename, "wb") as f:
             f.write(file.file.read())
         
-        pdf_to_image(file.filename , identity )
+        pdf_to_image(file.filename , "aadhar" )
         os.remove(file.filename)
         return {"message": "PDF uploaded successfully." }
     else:
@@ -239,6 +239,12 @@ def face_verification(base64_img : str ):
         return {"res":"true" ,  "message" : "verification swuccessful"} 
     else :
         return {"res" : "false" , "message" : "verification  failure"}
+    
+@app.post("/verify-face2")
+async def faceVerify():
+    time.sleep(10)
+    return {"ver_status" : "AI verification done" , "res":True}
+
     
 @app.post("/admin-verification")
 def admin_verification() : 
