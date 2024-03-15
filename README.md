@@ -11,9 +11,7 @@ Our KYC application is a comprehensive solution for secure identity verification
 
 [![Video](https://img.youtube.com/vi/8aOufAgHciw/maxresdefault.jpg)](https://www.youtube.com/watch?v=8aOufAgHciw)
 
-Click on the image for Video Demo (will be redireted to linked drive)
-
-[![](https://img.youtube.com/vi/8aOufAgHciw/maxresdefault.jpg)](https://drive.google.com/file/d/1-OqHInfaBNca6Xwvq7pFOytRmuN3MJPy/view?usp=share_link)
+https://github.com/Hrithik2212/Conversational-KYC-Agent/assets/94508892/6f6b5ab2-040e-4c4e-88f7-bd8b188a8da1
 
 
 ## **Features** 
@@ -23,6 +21,9 @@ Click on the image for Video Demo (will be redireted to linked drive)
 * **Face Verification** algorithm for Early Check before Admin verification
 * NER Recognition on to identify entities in Speech Conversations (Future Scope)
 * Multi Lingual Support (Future Scope) 
+
+
+
 
 
 
