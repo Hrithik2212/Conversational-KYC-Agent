@@ -6,35 +6,21 @@ Our KYC application is a comprehensive solution for secure identity verification
 
 
 
-## Demo
+# Video Demo
+* Click on the image for Video Demo (will be redireted to youtube)
 
-insert link
-
-
-## Installation
-
-Install project with npm
-
-```bash
-  npm install 
-  cd frontend
-```
-    
+[![Video](https://img.youtube.com/vi/8aOufAgHciw/maxresdefault.jpg)](https://www.youtube.com/watch?v=8aOufAgHciw)
 
 
+## **Features** 
 
-## Screenshots
-
-![App Screenshot](https://www.tumblr.com/situya/744928588587991040/github?source=share)
-
-
-
-
-
+* **Speech Synthesis** Conversational Interactive Details 
+* Face Liveliness Detection for **Face Anti Spoofing** preventing Fraud
+* **Face Verification** algorithm for Early Check before Admin verification
+* NER Recognition on to identify entities in Speech Conversations (Future Scope)
+* Multi Lingual Support (Future Scope) 
 
 
-
-.
 
 
 ## Lessons Learned
