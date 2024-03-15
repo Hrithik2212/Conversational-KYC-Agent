@@ -11,6 +11,8 @@ Our KYC application is a comprehensive solution for secure identity verification
 
 [![Video](https://img.youtube.com/vi/8aOufAgHciw/maxresdefault.jpg)](https://www.youtube.com/watch?v=8aOufAgHciw)
 
+[![](https://img.youtube.com/vi/8aOufAgHciw/maxresdefault.jpg)](https://drive.google.com/file/d/1-OqHInfaBNca6Xwvq7pFOytRmuN3MJPy/view?usp=share_link)
+
 
 ## **Features** 
 
